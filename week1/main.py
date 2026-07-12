@@ -66,38 +66,36 @@ def preprocess(frame: np.ndarray):
 
 
 def main():
-    first_video_device = lib.device.detect_first_video_device()
-    if first_video_device is None:
+    video_captrue = lib.device_libs.first_video_capture()
+    if video_captrue is None:
         print("웹캠을 찾을 수 없습니다. 프로그램을 종료합니다.")
+        sys.exit(0)
         return
 
-    def while_video_read(frameData: lib.device.FrameData):
-        frame = frameData.frame
-        if not frameData.ret:
-            print("프레임을 읽어오는데 실패했습니다.")
-            return
+    frame_datas = lib.device_libs.video_read_queue(video_captrue)
+    for frame_data in frame_datas:
+       if frame_data is None:
+           print("웹캠에서 더 이상 프레임을 읽어올 수 없습니다. 프로그램을 종료합니다.")
+           cv2.destroyAllWindows()
+           break
+       frame = frame_data.frame
+       fps = frame_data.fps
+       process_frame = preprocess(frame)
+       process_frame = cv2.cvtColor(process_frame, cv2.COLOR_GRAY2BGR)
+       # 결과 화면 출력 (원본 + 전처리 결과 나란히)
+       combine_frame = combine_frames(frame, process_frame)
+       full_fps_frame = draw_fps(combine_frame, fps)
 
-        process_frame = preprocess(frame)
-        process_frame = cv2.cvtColor(process_frame, cv2.COLOR_GRAY2BGR)
-        # 결과 화면 출력 (원본 + 전처리 결과 나란히)
-        combine_frame = combine_frames(frame, process_frame)
-        full_fps_frame = draw_fps(combine_frame, frameData.fps)
-
-        # full_frame = process_frame
-        cv2.imshow("Webcam", full_fps_frame)
+       # full_frame = process_frame
+       cv2.imshow("Webcam", full_fps_frame)
 
 
-        cv2.imwrite('result.png', combine_frame)
-        # cv2.waitKey(1)로 1ms 동안 키 입력을 대기합니다.
-        # q를 누르면(ord('q')와 일치하면) 루프를 종료합니다.
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            print("사용자 요청으로 프로그램을 종료합니다.")
-            sys.exit(0)
-    def while_video_cleanup():
-        cv2.destroyAllWindows()
-        print("모든 웹캠 리소스가 안전하게 해제되었습니다.")
-
-    lib.device.while_video_read_context(first_video_device, while_video_read, while_video_cleanup)
+       cv2.imwrite('result.png', combine_frame)
+       # cv2.waitKey(1)로 1ms 동안 키 입력을 대기합니다.
+       # q를 누르면(ord('q')와 일치하면) 루프를 종료합니다.
+       if cv2.waitKey(1) & 0xFF == ord('q'):
+           print("사용자 요청으로 프로그램을 종료합니다.")
+           sys.exit(0)
 
 if __name__ == '__main__':
     main()

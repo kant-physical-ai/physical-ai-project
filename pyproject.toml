@@ -1,8 +1,24 @@
 [project]
 name = "physical-ai-project"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.12"
 dependencies = [
     "matplotlib>=3.10.9",
-    "device-python>=5.0.0.93",
+    "opencv-python>=5.0.0.93",
+    "pytest>=9.1.1",
 ]
+
+[project.scripts]
+week1 = "week1.main:main"
+week2 = "week2.main:main"
+week3 = "week3.main:main"
+week4 = "week4.main:main"
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["lib*", "week1*", "week2*", "week3*", "week4*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

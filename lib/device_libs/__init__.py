@@ -2,8 +2,10 @@ import threading
 
 import cv2
 import numpy as np
-from typing import Callable, Optional, NamedTuple
+from typing import Callable, Optional, NamedTuple, Any, Generator, Iterator
 from dataclasses import dataclass
+from collections import deque
+from queue import Queue
 import time
 from .tot import *
 
@@ -15,34 +17,56 @@ class FrameData(NamedTuple):
     currentTime: float
     fps: float
 
-# 프레임을 받아 아무것도 리턴하지 않는(None) 콜백 함수 타입 정의
-def while_video_read_context(device_id: int, callback: Callable[[FrameData], None],
-                       on_finish: Optional[Callable[[], None]] = None):
-    cap = cv2.VideoCapture(device_id, cv2.CAP_ANY)
+
+
+def video_read_queue(video_capture: cv2.VideoCapture) -> Iterator[FrameData | None]:
     prev_time = time.perf_counter()
     try:
-        while cap.isOpened():
-            ret, frame = cap.read()
+        while video_capture.isOpened():
+            ret, frame = video_capture.read()
             current_time = time.perf_counter()
-
             if not ret:
                 break
-
-            data = FrameData(
+            yield FrameData(
                 frame=frame,
+                videoCapture=video_capture,
                 ret=ret,
-                videoCapture=cap,
                 prevTime=prev_time,
                 currentTime=current_time,
                 fps=1 / (current_time - prev_time)
             )
-            callback(data)
             prev_time = current_time
     finally:
-        cap.release()
-        # 만약 on_finish 함수가 제공되었다면 실행
-        if on_finish is not None:
-            on_finish()
+        video_capture.release()
+        
+    yield None
+
+# def video_read_queue_thread(video_capture: cv2.VideoCapture)-> Queue[FrameData | None]:
+#     frame_queue = Queue(maxsize=1)
+#     def read_thread():
+#         prev_time = time.perf_counter()
+#         try:
+#             while video_capture.isOpened():
+#                 ret, frame = video_capture.read()
+#                 current_time = time.perf_counter()
+#                 if not ret:
+#                     break
+#                 frame_queue.put(FrameData(
+#                     frame=frame,
+#                     videoCapture=video_capture,
+#                     ret=ret,
+#                     prevTime=prev_time,
+#                     currentTime=current_time,
+#                     fps=1 / (current_time - prev_time)
+#                 ))
+#                 prev_time = current_time
+#         finally:
+#             video_capture.release()
+#             frame_queue.put(None)
+#
+#     threading.Thread(target=read_thread, daemon=True).start()
+#     return frame_queue
+
 
 
 def is_available_video_device(device_id: int, require_frame: bool = True) -> bool:

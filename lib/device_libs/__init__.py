@@ -19,7 +19,7 @@ class FrameData(NamedTuple):
 
 
 
-def video_read_queue(video_capture: cv2.VideoCapture) -> Iterator[FrameData | None]:
+def video_read_iterator(video_capture: cv2.VideoCapture) -> Iterator[FrameData | None]:
     prev_time = time.perf_counter()
     try:
         while video_capture.isOpened():

@@ -10,7 +10,7 @@ def main():
         print("웹캠을 찾을 수 없습니다. 프로그램을 종료합니다.")
         sys.exit(0)
         return
-    frame_datas = lib.device_libs.video_read_queue(video_captrue)
+    frame_datas = lib.device_libs.video_read_iterator(video_captrue)
     for frame_data in frame_datas:
         if frame_data is None:
             print("웹캠에서 더 이상 프레임을 읽어올 수 없습니다. 프로그램을 종료합니다.")

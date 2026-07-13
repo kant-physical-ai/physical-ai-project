@@ -146,7 +146,7 @@ def detect(frame: np.ndarray):
 
     # object print
     for obj in objects:
-        print(f"({obj.cx}, {obj.cy}) | 면적: {obj.area:.2f}px²")
+        print(f"obj: ({obj.cx}, {obj.cy}) | 면적: {obj.area:.2f}px²")
 
     return result_frame, mask, objects
 

@@ -33,6 +33,16 @@ def pixel_to_world(point: tuple[float, float], image_width: int, image_height: i
 
     return world_point
 
+
+def update_plot(ax: plt.Axes, pixel: tuple[list[float], list[float]], world: tuple[list[float], list[float]], title: str = "title"):
+    ax.cla()  # 이전 그림 지우기
+    ax.scatter(pixel[0], pixel[1], c='blue', label='pixel', s=10)
+    ax.scatter(world[0], world[1], c='red', label='world', s=10)
+    ax.legend()
+    ax.set_title(title)
+    plt.pause(0.001)  # 화면 갱신
+    pass
+
 """
 기능 4 — matplotlib 실시간 시각화
 픽셀 좌표와 실세계 좌표를 산점도로 그려, 변환 결과를 눈으로 확인합니다.
@@ -99,7 +109,6 @@ def main():
         cv2.putText(frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
 
-        world_point = None
         # 가장 면적이 큰 물체를 찾습니다  리스트가 비어있을 경우 에러 방지
         # 리스트가 비어있으면 max() 함수는 ValueError를 발생시킵니다. 이를 방지하려면 default 인자를 사용하세요.
         largest_object = max(objects, key=lambda obj: obj.area, default=None)
@@ -115,12 +124,6 @@ def main():
             cv2.putText(frame, f"World: ({world_point[0]:.2f}, {world_point[1]:.2f})", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
             print(f"pixel point: ({largest_object.cx}, {largest_object.cy})")
             print(f"world point: ({world_point[0]:.2f}, {world_point[1]:.2f})")
-
-        cv2.imshow("Webcam", frame)
-        cv2.imwrite('result.png', frame)
-
-
-        if world_point is not None and largest_object is not None :
             pixel_history.append((largest_object.cx, largest_object.cy))
             world_history.append((world_point[0], world_point[1]))
             frame_count += 1
@@ -132,22 +135,18 @@ def main():
                 매 프레임이 아니라 몇 프레임에 한 번만 갱신해 부하를 줄입니다 (예: 3프레임마다)
                 확인 방법: 물체를 움직이면 matplotlib 창에 픽셀·실세계 점이 이력으로 찍히면 완료입니다.
                 """
-                ax.cla()  # 이전 그림 지우기
-
                 # 픽셀 좌표 (파랑)
                 px = [p[0] for p in pixel_history]
                 py = [p[1] for p in pixel_history]
-                ax.scatter(px, py, c='blue', label='pixel', s=10)
 
                 # 실세계 좌표 (빨강)
                 wx = [w[0] for w in world_history]
                 wy = [w[1] for w in world_history]
-                ax.scatter(wx, wy, c='red', label='world', s=10)
+                update_plot(ax, (px, py), (wx, wy), title=f"frame: {frame_count}")
 
-                ax.legend()
-                ax.set_title(f"frame: {frame_count}")
-                # 화면갱신하는데 윈도우 포커싱은 안되게
-                plt.pause(0.001)  # 화면 갱신
+
+        cv2.imshow("Webcam", frame)
+        cv2.imwrite('result.png', frame)
 
 
         # a/d, +/- 로 각도·스케일이 바뀌고 q로 종료된다
@@ -161,7 +160,7 @@ def main():
         elif key == ord('-'):
             scale /= 1.1
         # q를 누르면(ord('q')와 일치하면) 루프를 종료합니다.
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        elif cv2.waitKey(1) & 0xFF == ord('q'):
             print("사용자 요청으로 프로그램을 종료합니다.")
             sys.exit(0)
 if __name__ == "__main__":

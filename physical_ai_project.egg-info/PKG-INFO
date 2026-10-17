@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: physical-ai-project
+Version: 0.1.0
+Requires-Python: <3.12,>=3.10
+Requires-Dist: google-genai>=2.16.0
+Requires-Dist: gradio>=6.22.0
+Requires-Dist: kagglehub>=1.0.2
+Requires-Dist: matplotlib>=3.10.9
+Requires-Dist: opencv-python>=5.0.0.93
+Requires-Dist: pandas>=2.3.3
+Requires-Dist: pandas-stubs~=2.3.3
+Requires-Dist: pd>=0.0.4
+Requires-Dist: pytest>=9.1.1

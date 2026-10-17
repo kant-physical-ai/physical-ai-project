@@ -1,0 +1,5 @@
+[console_scripts]
+week1 = week1.main:main
+week2 = week2.main:main
+week3 = week3.main:main
+week4 = week4.main:main
